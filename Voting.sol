@@ -13,6 +13,7 @@ contract Voting {
     function vote(string memory candidate) public {
         bool isValidCandidate = false;
         for (uint i = 0; i < candidateList.length; i++) {
+            // solc strings are dynamically sized by that it must be hashed with sha-3
             if (keccak256(abi.encodePacked(candidateList[i])) == keccak256(abi.encodePacked(candidate))) {
                 isValidCandidate = true;
                 break;
