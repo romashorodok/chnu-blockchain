@@ -1,5 +1,5 @@
 
 .PHONY: build
 build:
-	solc --bin --abi --optimize --overwrite -o build SimpleStorage.sol
+	solc --bin --abi --optimize --overwrite -o build Voting.sol
 
