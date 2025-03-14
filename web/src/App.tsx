@@ -10,14 +10,21 @@ function App() {
   const [candidates, setCandidates] = useState([]);
   const [votes, setVotes] = useState({});
   const [selectedCandidate, setSelectedCandidate] = useState('');
-
-  const [contract, setContract] = useState<ethers.Contract | undefined>(undefined);
+  const [account, setAccount] = useState<string | null>(null);
+  const [balance, setBalance] = useState<string | null>(null);
+  const [contract, setContract] = useState<ethers.Contract | null>(null);
+  const [provider, setProvider] = useState<ethers.JsonRpcProvider | null>(null);
 
   useEffect(() => {
     const init = async () => {
       const provider = new ethers.JsonRpcProvider("http://localhost:8545");
+      setProvider(provider)
       const newSigner = await provider.getSigner();
       const newContract = new ethers.Contract(VOTING_CONTRACT_ADDRESS, VOTING_CONTRACT_ABI, newSigner);
+      const accounts = await provider.send("eth_accounts", []);
+      setAccount(accounts[0]);
+      const balance = await provider.getBalance(accounts[0]);
+      setBalance(ethers.formatEther(balance))
       setContract(newContract)
       await loadCandidates(newContract);
     };
@@ -42,7 +49,7 @@ function App() {
   };
 
   const handleVote = async () => {
-    if (!contract) return
+    if (!contract || !provider) return
 
     try {
       if (!selectedCandidate) {
@@ -52,6 +59,12 @@ function App() {
 
       const tx = await contract.vote(selectedCandidate);
       await tx.wait();
+
+      const accounts = await provider.send("eth_accounts", []);
+      setAccount(accounts[0]);
+      const balance = await provider.getBalance(accounts[0]);
+      setBalance(ethers.formatEther(balance))
+
 
       alert(`Vote for ${selectedCandidate} successful!`);
       await loadCandidates(contract);
@@ -63,6 +76,9 @@ function App() {
 
   return (
     <div className="App">
+      <p><strong>Account:</strong> {account}</p>
+      <p><strong>Balance:</strong> {balance}</p>
+
       <h1>Voting</h1>
       <div>
         <h2>Select a Candidate to Vote For</h2>
